@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
 
-
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 
 class HotelSearch extends Component {
@@ -30,22 +29,19 @@ class HotelSearch extends Component {
   searchForHotels() {
     const { google } = this.props;
     const service = new google.maps.places.PlacesService(this.state.map);
-  
+
     const request = {
       location: this.props.initialCenter,
-      radius: 5000, // 5 kilometers
+      radius: 5000,
       type: ['lodging'],
     };
-  
-    // Send a nearby search request to get a list of places
+
     service.nearbySearch(request, (results, status) => {
       if (status === window.google.maps.places.PlacesServiceStatus.OK) {
         const hotelsWithDetailsPromises = results.map((hotel) => {
-          // Get additional details for each place
           return new Promise((resolve) => {
             service.getDetails({ placeId: hotel.place_id }, (place, status) => {
               if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-                // Combine basic information with additional details
                 const hotelWithDetails = {
                   ...hotel,
                   price_level: place.price_level,
@@ -53,53 +49,57 @@ class HotelSearch extends Component {
                 };
                 resolve(hotelWithDetails);
               } else {
-                resolve(hotel); // Use basic information if details are not available
+                resolve(hotel);
               }
             });
           });
         });
-  
-        // Wait for all promises to resolve before updating state
+
         Promise.all(hotelsWithDetailsPromises).then((hotelsWithDetails) => {
           this.setState({ hotels: hotelsWithDetails });
         });
       }
     });
-  }  
+  }
 
   render() {
     const { hotels } = this.state;
 
     return (
       <div style={{ display: 'flex' }}>
-        <div style={{ flex: 1, padding: '1rem' }}>
+        <div style={styles.hotelList}>
           <h2>Hotels Near Your Location:</h2>
-          <ul>
           {hotels.map((hotel) => (
-            <li key={hotel.place_id}>
-              <strong>{hotel.name}</strong>
-              <p>Address: {hotel.vicinity}</p>
-              <p>Rating: {hotel.rating}</p>
-              <p>Price Level: {hotel.price_level}</p>
-              <div>
+            <div key={hotel.place_id} style={styles.hotelCard}>
+              <div style={styles.hotelImageContainer}>
                 {hotel.photos && hotel.photos[0] ? (
-                  <img src={hotel.photos[0].getUrl()} alt="Hotel" width="100" />
+                  <img
+                    src={hotel.photos[0].getUrl()}
+                    alt="Hotel"
+                    style={styles.hotelImage}
+                  />
                 ) : (
                   <p>No Photo Available</p>
                 )}
               </div>
-              <hr />
-            </li>
+              <div style={styles.hotelInfoContainer}>
+                <h3 style={styles.hotelName}>{hotel.name}</h3>
+                <p style={styles.hotelAddress}>Address: {hotel.vicinity}</p>
+                <p style={styles.hotelRating}>Rating: {hotel.rating}</p>
+                <p style={styles.hotelPrice}>
+                  Price Level: {hotel.price_level || 'Not available'}
+                </p>
+              </div>
+            </div>
           ))}
-        </ul>
         </div>
-        <div style={{ flex: 2 }}>
+        <div style={styles.map}>
           <Map
             google={this.props.google}
-            style={{ width: '100%', height: '100%' }} // Adjust the width and height
             zoom={14}
             initialCenter={this.props.initialCenter}
             onReady={(mapProps, map) => this.setState({ map })}
+            style={{ width: '100%', height: '100%' }}
           >
             {hotels.map((hotel) => (
               <Marker
@@ -118,7 +118,50 @@ class HotelSearch extends Component {
   }
 }
 
-
+const styles = {
+  hotelList: {
+    flex: 1,
+    padding: '1rem',
+    height: '100%',
+    overflowY: 'auto',
+  },
+  hotelCard: {
+    display: 'flex',
+    margin: '1rem 0',
+    borderRadius: '10px',
+    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.2)',
+    padding: '1rem',
+  },
+  hotelImageContainer: {
+    flex: 1,
+    marginRight: '1rem',
+  },
+  hotelImage: {
+    width: '100%',
+    maxHeight: '200px',
+    objectFit: 'cover',
+  },
+  hotelInfoContainer: {
+    flex: 2,
+  },
+  hotelName: {
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+  },
+  hotelAddress: {
+    fontSize: '1rem',
+  },
+  hotelRating: {
+    fontSize: '1rem',
+  },
+  hotelPrice: {
+    fontSize: '1rem',
+  },
+  map: {
+    flex: 2,
+    height: '80vh',
+  },
+};
 
 export default GoogleApiWrapper({
   apiKey: apiKey,
