@@ -9,7 +9,7 @@ class HotelSearch extends Component {
   state = {
     hotels: [],
     map: null,
-    numHotelsToShow: 5,
+    numHotelsToShow: 3,
     mapCenter: this.props.initialCenter,
     selectedHotel: null,
     isMounted: false,
@@ -82,11 +82,11 @@ class HotelSearch extends Component {
     });
   }
 
-  loadMoreHotels() {
+  loadMoreHotels = () => {
     if (this.state.isMounted) {
-      this.setState((prevState) => ({ numHotelsToShow: prevState.numHotelsToShow + 5 }));
+      this.setState((prevState) => ({ numHotelsToShow: prevState.numHotelsToShow + 4 }));
     }
-  }
+  };
 
   // Handle marker click to select the hotel
   handleMarkerClick = (hotel) => {
