@@ -1,3 +1,4 @@
+import './HotelSearch.css';
 import React, { Component } from 'react';
 import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
 
@@ -67,41 +68,41 @@ class HotelSearch extends Component {
     const visibleHotels = hotels.slice(0, numHotelsToShow);
 
     return (
-      <div style={styles.container}>
-        <div style={styles.hotelList}>
+      <div className="container"> {/* Use the class names from HotelSearch.css */}
+        <div className="hotelList">
           <h2>Hotels Near Your Location:</h2>
           {visibleHotels.map((hotel) => (
-            <div key={hotel.place_id} style={styles.hotelCard}>
-              <div style={styles.hotelImageContainer}>
+            <div key={hotel.place_id} className="hotelCard">
+              <div className="hotelImageContainer">
                 {hotel.photos && hotel.photos[0] ? (
                   <img
                     src={hotel.photos[0].getUrl()}
                     alt="Hotel"
-                    style={styles.hotelImage}
+                    className="hotelImage"
                   />
                 ) : (
                   <p>No Photo Available</p>
                 )}
               </div>
-              <div style={styles.hotelInfoContainer}>
-                <h3 style={styles.hotelName}>{hotel.name}</h3>
-                <p style={styles.hotelAddress}>Address: {hotel.vicinity}</p>
-                <p style={styles.hotelRating}>Rating: {hotel.rating}</p>
-                <p style={styles.hotelPrice}>
+              <div className="hotelInfoContainer">
+                <h3 className="hotelName">{hotel.name}</h3>
+                <p className="hotelAddress">Address: {hotel.vicinity}</p>
+                <p className="hotelRating">Rating: {hotel.rating}</p>
+                <p className="hotelPrice">
                   Price Range: {getPriceRange(hotel.price_level) || 'Not available (VISIT HOTEL WEBSITE)'}
                 </p>
               </div>
             </div>
           ))}
           {numHotelsToShow < hotels.length && (
-            <div style={styles.buttonContainer}>
-              <button style={styles.seeMoreButton} onClick={this.loadMoreHotels}>
+            <div className="buttonContainer">
+              <button className="seeMoreButton" onClick={this.loadMoreHotels}>
                 See more
               </button>
             </div>
           )}
         </div>
-        <div style={styles.mapContainer}>
+        <div className="mapContainer">
           <Map
             google={this.props.google}
             zoom={14}
@@ -144,70 +145,6 @@ function getPriceRange(priceLevel) {
       return 'Not available. Visit hotel website';
   }
 }
-
-const styles = {
-  container: {
-    display: 'flex',
-  },
-  hotelList: {
-    flex: 1,
-    padding: '1rem',
-    height: '100%',
-    overflowY: 'auto',
-  },
-  hotelCard: {
-    display: 'flex',
-    margin: '1rem 0',
-    borderRadius: '10px',
-    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.2)',
-    padding: '1rem',
-  },
-  hotelImageContainer: {
-    flex: 1,
-    marginRight: '1rem',
-  },
-  hotelImage: {
-    width: '100%',
-    maxHeight: '200px',
-    objectFit: 'cover',
-  },
-  hotelInfoContainer: {
-    flex: 2,
-  },
-  hotelName: {
-    fontSize: '1.2rem',
-    fontWeight: 'bold',
-  },
-  hotelAddress: {
-    fontSize: '1rem',
-  },
-  hotelRating: {
-    fontSize: '1rem',
-  },
-  hotelPrice: {
-    fontSize: '1rem',
-  },
-  mapContainer: {
-    flex: 2,
-    height: '80vh',
-    marginTop: '20px',
-    paddingTop: '60px',
-  },
-  seeMoreButton: {
-    background: 'green',
-    color: 'white',
-    border: 'none',
-    borderRadius: '5px',
-    padding: '10px 20px',
-    cursor: 'pointer',
-    fontSize: '1.5rem',
-    marginBottom: '1rem',
-  },
-  buttonContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-};
 
 export default GoogleApiWrapper({
   apiKey: apiKey,
