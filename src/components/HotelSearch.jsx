@@ -75,7 +75,8 @@ class HotelSearch extends Component {
     service.nearbySearch(request, (results, status) => {
       if (status === window.google.maps.places.PlacesServiceStatus.OK) {
         this.setState({ hotels: results }, () => {
-          this.addMarkersToMap(); // Call this function after setting state
+          // Call this function after setting state
+          this.addMarkersToMap();
         });
       }
     });
@@ -150,23 +151,30 @@ class HotelSearch extends Component {
                   key={hotel.place_id}
                   name={hotel.name}
                   position={position}
-                  onClick={() => this.handleMarkerClick(hotel)} // Handle marker click
+                  onClick={() => this.handleMarkerClick(hotel)}
                 />
               );
             })}
           </Map>
         </div>
         {selectedHotel && (
-          <div className="selectedHotelCard">
-            {/* Render the selected hotel details here */}
+          <div className="hotelSelected">
             <h2>Selected Hotel:</h2>
-            <h3>{selectedHotel.name}</h3>
-            <p>Address: {selectedHotel.vicinity}</p>
-            <p>Rating: {selectedHotel.rating}</p>
-            <p>
+            <h3 className="hotelName">{selectedHotel.name}</h3>
+            <p className="hotelAddress">Address: {selectedHotel.vicinity}</p>
+            <p className="hotelRating">Rating: {selectedHotel.rating}</p>
+            <p className="hotelPrice">
               Price Range: {getPriceRange(selectedHotel.price_level) || 'Not available (VISIT HOTEL WEBSITE)'}
             </p>
-            {/* TODO - Is possible add more details as needed */}
+            {selectedHotel.photos && selectedHotel.photos[0] ? (
+              <img
+                src={selectedHotel.photos[0].getUrl()}
+                alt="Hotel"
+                className="hotelImage"
+              />
+            ) : (
+              <p>No Photo Available</p>
+            )}
           </div>
         )}
       </div>
