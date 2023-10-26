@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
 
+
+const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
+
 class HotelSearch extends Component {
   constructor(props) {
     super(props);
@@ -115,6 +118,8 @@ class HotelSearch extends Component {
   }
 }
 
+
+
 export default GoogleApiWrapper({
-  apiKey: 'AIzaSyBp_VsTfGns4FsY3ty-OPVDYnsRV8j4wio',
+  apiKey: apiKey,
 })(HotelSearch);
