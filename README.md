@@ -1,4 +1,4 @@
-# Serach Hotels App
+# Search Hotels App
 
 This project is a project to implement interaction between React Js and Google map API to retrieve information from hotels and work with user interaction.
 
