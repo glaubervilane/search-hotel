@@ -11,7 +11,13 @@ class HotelSearch extends Component {
     map: null,
     numHotelsToShow: 5,
     mapCenter: this.props.initialCenter,
+    selectedHotel: null,
+    isMounted: false,
   };
+
+  componentDidMount() {
+    this.setState({ isMounted: true });
+  }
 
   componentDidUpdate(prevProps) {
     if (this.props.google) {
@@ -23,14 +29,38 @@ class HotelSearch extends Component {
     }
   }
 
+  componentWillUnmount() {
+    this.setState({ isMounted: false });
+  }
+
   updateMapCenter() {
-    if (this.state.map) {
+    if (this.state.map && this.state.isMounted) {
       this.state.map.setCenter(this.props.initialCenter);
       this.setState({ mapCenter: this.props.initialCenter }, () => {
         this.searchForHotels();
       });
     }
   }
+
+  addMarkersToMap = () => {
+    const { google } = this.props;
+    const map = this.state.map;
+    const { hotels } = this.state;
+
+    hotels.forEach((hotel) => {
+      const marker = new google.maps.Marker({
+        position: {
+          lat: hotel.geometry.location.lat(),
+          lng: hotel.geometry.location.lng(),
+        },
+        map: map,
+      });
+
+      marker.addListener("click", () => {
+        this.handleMarkerClick(hotel);
+      });
+    });
+  };
 
   searchForHotels() {
     const { google } = this.props;
@@ -44,36 +74,26 @@ class HotelSearch extends Component {
 
     service.nearbySearch(request, (results, status) => {
       if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-        const hotelsWithDetailsPromises = results.map((hotel) => {
-          return new Promise((resolve) => {
-            service.getDetails({ placeId: hotel.place_id }, (place, status) => {
-              if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-                const hotelWithDetails = {
-                  ...hotel,
-                  price_level: place.price_level,
-                  photos: place.photos,
-                };
-                resolve(hotelWithDetails);
-              } else {
-                resolve(hotel);
-              }
-            });
-          });
-        });
-
-        Promise.all(hotelsWithDetailsPromises).then((hotelsWithDetails) => {
-          this.setState({ hotels: hotelsWithDetails });
+        this.setState({ hotels: results }, () => {
+          this.addMarkersToMap(); // Call this function after setting state
         });
       }
     });
   }
 
   loadMoreHotels() {
-    this.setState((prevState) => ({ numHotelsToShow: prevState.numHotelsToShow + 5 }));
+    if (this.state.isMounted) {
+      this.setState((prevState) => ({ numHotelsToShow: prevState.numHotelsToShow + 5 }));
+    }
   }
 
+  // Handle marker click to select the hotel
+  handleMarkerClick = (hotel) => {
+    this.setState({ selectedHotel: hotel });
+  };
+
   render() {
-    const { hotels, numHotelsToShow } = this.state;
+    const { hotels, numHotelsToShow, selectedHotel } = this.state;
     const visibleHotels = hotels.slice(0, numHotelsToShow);
 
     return (
@@ -130,11 +150,25 @@ class HotelSearch extends Component {
                   key={hotel.place_id}
                   name={hotel.name}
                   position={position}
+                  onClick={() => this.handleMarkerClick(hotel)} // Handle marker click
                 />
               );
             })}
           </Map>
         </div>
+        {selectedHotel && (
+          <div className="selectedHotelCard">
+            {/* Render the selected hotel details here */}
+            <h2>Selected Hotel:</h2>
+            <h3>{selectedHotel.name}</h3>
+            <p>Address: {selectedHotel.vicinity}</p>
+            <p>Rating: {selectedHotel.rating}</p>
+            <p>
+              Price Range: {getPriceRange(selectedHotel.price_level) || 'Not available (VISIT HOTEL WEBSITE)'}
+            </p>
+            {/* TODO - Is possible add more details as needed */}
+          </div>
+        )}
       </div>
     );
   }
