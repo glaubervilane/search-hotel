@@ -7,7 +7,7 @@ class HotelSearch extends Component {
   state = {
     hotels: [],
     map: null,
-    numHotelsToShow: 5, // Number of hotels to initially show
+    numHotelsToShow: 5,
   };
 
   componentDidMount() {
