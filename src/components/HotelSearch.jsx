@@ -4,19 +4,15 @@ import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 
 class HotelSearch extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      hotels: [],
-      map: null,
-    };
-  }
+  state = {
+    hotels: [],
+    map: null,
+    numHotelsToShow: 5, // Number of hotels to initially show
+  };
 
   componentDidMount() {
     if (this.props.google) {
-      this.setState({ isGoogleApiLoaded: true }, () => {
-        this.searchForHotels();
-      });
+      this.setState({ isGoogleApiLoaded: true }, this.searchForHotels);
     }
   }
 
@@ -26,7 +22,7 @@ class HotelSearch extends Component {
     }
   }
 
-  searchForHotels() {
+  searchForHotels = () => {
     const { google } = this.props;
     const service = new google.maps.places.PlacesService(this.state.map);
 
@@ -60,16 +56,21 @@ class HotelSearch extends Component {
         });
       }
     });
-  }
+  };
+
+  loadMoreHotels = () => {
+    this.setState((prevState) => ({ numHotelsToShow: prevState.numHotelsToShow + 5 }));
+  };
 
   render() {
-    const { hotels } = this.state;
+    const { hotels, numHotelsToShow } = this.state;
+    const visibleHotels = hotels.slice(0, numHotelsToShow);
 
     return (
-      <div style={{ display: 'flex' }}>
+      <div style={styles.container}>
         <div style={styles.hotelList}>
           <h2>Hotels Near Your Location:</h2>
-          {hotels.map((hotel) => (
+          {visibleHotels.map((hotel) => (
             <div key={hotel.place_id} style={styles.hotelCard}>
               <div style={styles.hotelImageContainer}>
                 {hotel.photos && hotel.photos[0] ? (
@@ -87,30 +88,41 @@ class HotelSearch extends Component {
                 <p style={styles.hotelAddress}>Address: {hotel.vicinity}</p>
                 <p style={styles.hotelRating}>Rating: {hotel.rating}</p>
                 <p style={styles.hotelPrice}>
-                  Price Level: {hotel.price_level || 'Not available'}
+                  Price Range: {getPriceRange(hotel.price_level) || 'Not available (VISIT HOTEL WEBSITE)'}
                 </p>
               </div>
             </div>
           ))}
+          {numHotelsToShow < hotels.length && (
+            <div style={styles.buttonContainer}>
+              <button style={styles.seeMoreButton} onClick={this.loadMoreHotels}>
+                See more
+              </button>
+            </div>
+          )}
         </div>
-        <div style={styles.map}>
+        <div style={styles.mapContainer}>
           <Map
             google={this.props.google}
             zoom={14}
             initialCenter={this.props.initialCenter}
             onReady={(mapProps, map) => this.setState({ map })}
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: '50%', height: '50vh' }}
           >
-            {hotels.map((hotel) => (
-              <Marker
-                key={hotel.place_id}
-                name={hotel.name}
-                position={{
-                  lat: hotel.geometry.location.lat(),
-                  lng: hotel.geometry.location.lng(),
-                }}
-              />
-            ))}
+            {visibleHotels.map((hotel) => {
+              const position = {
+                lat: hotel.geometry.location.lat(),
+                lng: hotel.geometry.location.lng(),
+              };
+
+              return (
+                <Marker
+                  key={hotel.place_id}
+                  name={hotel.name}
+                  position={position}
+                />
+              );
+            })}
           </Map>
         </div>
       </div>
@@ -118,7 +130,25 @@ class HotelSearch extends Component {
   }
 }
 
+function getPriceRange(priceLevel) {
+  switch (priceLevel) {
+    case 0:
+      return '$';
+    case 1:
+      return '$$';
+    case 2:
+      return '$$$';
+    case 3:
+      return '$$$$';
+    default:
+      return 'Not available. Visit hotel website';
+  }
+}
+
 const styles = {
+  container: {
+    display: 'flex',
+  },
   hotelList: {
     flex: 1,
     padding: '1rem',
@@ -157,9 +187,25 @@ const styles = {
   hotelPrice: {
     fontSize: '1rem',
   },
-  map: {
+  mapContainer: {
     flex: 2,
     height: '80vh',
+    marginTop: '20px',
+    paddingTop: '60px',
+  },
+  seeMoreButton: {
+    background: 'green',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    padding: '10px 20px',
+    cursor: 'pointer',
+    fontSize: '1.5rem',
+    marginBottom: '1rem',
+  },
+  buttonContainer: {
+    display: 'flex',
+    flexDirection: 'column',
   },
 };
 
