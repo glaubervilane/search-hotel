@@ -1,3 +1,7 @@
+# Serach Hotels App
+
+This project is a project to implement interaction between React Js and Google map API to retrieve information from hotels and work with user interaction.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
