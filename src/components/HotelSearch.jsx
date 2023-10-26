@@ -1,6 +1,7 @@
 import './HotelSearch.css';
 import React, { Component } from 'react';
 import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
+import { getPriceRange } from './utils/PriceUtils';
 
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 
@@ -128,21 +129,6 @@ class HotelSearch extends Component {
         </div>
       </div>
     );
-  }
-}
-
-function getPriceRange(priceLevel) {
-  switch (priceLevel) {
-    case 0:
-      return '$';
-    case 1:
-      return '$$';
-    case 2:
-      return '$$$';
-    case 3:
-      return '$$$$';
-    default:
-      return 'Not available. Visit hotel website';
   }
 }
 
