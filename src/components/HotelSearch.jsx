@@ -10,26 +10,34 @@ class HotelSearch extends Component {
     hotels: [],
     map: null,
     numHotelsToShow: 5,
+    mapCenter: this.props.initialCenter,
   };
 
-  componentDidMount() {
-    if (this.props.google) {
-      this.setState({ isGoogleApiLoaded: true }, this.searchForHotels);
-    }
-  }
-
   componentDidUpdate(prevProps) {
-    if (this.props.google && this.props.initialCenter !== prevProps.initialCenter) {
-      this.searchForHotels();
+    if (this.props.google) {
+      if (this.props.initialCenter !== prevProps.initialCenter) {
+        this.updateMapCenter();
+      } else {
+        this.searchForHotels();
+      }
     }
   }
 
-  searchForHotels = () => {
+  updateMapCenter() {
+    if (this.state.map) {
+      this.state.map.setCenter(this.props.initialCenter);
+      this.setState({ mapCenter: this.props.initialCenter }, () => {
+        this.searchForHotels();
+      });
+    }
+  }
+
+  searchForHotels() {
     const { google } = this.props;
     const service = new google.maps.places.PlacesService(this.state.map);
 
     const request = {
-      location: this.props.initialCenter,
+      location: this.state.mapCenter,
       radius: 5000,
       type: ['lodging'],
     };
@@ -58,18 +66,18 @@ class HotelSearch extends Component {
         });
       }
     });
-  };
+  }
 
-  loadMoreHotels = () => {
+  loadMoreHotels() {
     this.setState((prevState) => ({ numHotelsToShow: prevState.numHotelsToShow + 5 }));
-  };
+  }
 
   render() {
     const { hotels, numHotelsToShow } = this.state;
     const visibleHotels = hotels.slice(0, numHotelsToShow);
 
     return (
-      <div className="container"> {/* Use the class names from HotelSearch.css */}
+      <div className="container">
         <div className="hotelList">
           <h2>Hotels Near Your Location:</h2>
           {visibleHotels.map((hotel) => (
